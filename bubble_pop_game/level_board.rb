@@ -10,6 +10,12 @@ require 'matrix'
 #overhaul enemy and traps into own class
 #add in face direction to hero and enemy class.  add in method to fire projectile
 
+$directions = Hash.new
+$directions["up"] = "up"
+$directions["right"] = "right"
+$directions["down"] = "down"
+$directions["left"] = "left"
+
 
 class Map
 	attr_accessor :map
@@ -90,7 +96,16 @@ class Map
 						printCurrentMap()
 					end
 				end
-
+        #projectile will destroy enemy unit.  Projectile will disappear after.
+        #move this to a reject! iterator in future patch.
+        projectiles_list.each do |projectile|
+          if projectile.position_x === enemy_x && projectile.position_y === enemy_y
+            markPositionOnMap(enemy_x, enemy_y, "x")
+            @enemy = nil
+            projectiles_list.delete(projectile)
+            puts "enemy destroyed"
+          end
+        end
 			end
 		end
 	end
@@ -111,7 +126,19 @@ class Map
 	#add in projectile and add to list.  Face depends on unit firing.  Position begins
 	#1 block in front of face direction.  Projectile moves 1 block per game tick.
 	def generateProjectile(position_x, position_y, face, owner)
-		projectile = Projectile.new(position_x, position_y, face, owner)
+    case
+    when face.match(/up/)
+      face_direction = $directions["up"]
+    when face.match(/down/)
+      face_direction = $directions["down"]
+    when face.match(/left/)
+      face_direction = $directions["left"]
+    when face.match(/right/)
+      face_direction = $directions["right"]     
+    else
+      face_direction = nil
+    end
+		projectile = Projectile.new(position_x, position_y, face_direction, owner)
 		self.projectiles_list.push(projectile)
 	end
 
@@ -215,10 +242,14 @@ end
 
 class Projectile
 	attr_accessor :position_x, :position_y, :face, :owner
+
+
+
 	def initialize(p_position_x = 0, p_position_y = 0, face = "up", owner = "none")
 		@position_x = p_position_x
 		@position_y = p_position_y
-		@face = face
+    @face = nil
+		self.changeFaceDirection(face)
 		@owner = owner
 	end
 
@@ -226,17 +257,34 @@ class Projectile
 		self.position_x = position_x
 		self.position_y = position_y
 	end
+
+  def changeFaceDirection(faceDirection)
+    case
+    when faceDirection.match(/up/)
+      @face = $directions["up"]
+    when faceDirection.match(/down/)
+      @face = $directions["down"]
+    when faceDirection.match(/left/)
+      @face = $directions["left"]
+    when faceDirection.match(/right/)
+      @face = $directions["right"]     
+    else
+      @face = nil
+    end    
+  end
 end
 
 
 
 
 class Unit
-	attr_accessor :position_x, :position_y
-	def initialize(position_x = 0, position_y = 0)
+	attr_accessor :position_x, :position_y, :face
+	def initialize(position_x = 0, position_y = 0, faceDirection = $directions["up"])
 		@position_x = position_x
 		@position_y = position_y
-
+    @face = nil
+    self.changeFaceDirection(faceDirection)
+    @name = nil
 	end
 
 
@@ -296,13 +344,51 @@ class Unit
 		end
 	end
 
+  def changeFaceDirection(faceDirectionString)
+    case
+    when faceDirectionString.match(/up/)
+      @face = $directions["up"]
+    when faceDirectionString.match(/down/)
+      @face = $directions["down"]
+    when faceDirectionString.match(/left/)
+      @face = $directions["left"]
+    when faceDirectionString.match(/right/)
+      @face = $directions["right"]     
+    else
+      @face = nil
+    end    
+  end
 
+  #places projectile 1 block in front of unit that fires it.  Front determined
+  #by face direction of unit.
+  def fireProjectile(mapObject)
+    face_direction = @face
+
+    case face_direction
+    when $directions["up"]
+      mapObject.generateProjectile(@position_x, @position_y, face_direction, @name)
+    when $directions["down"]
+      mapObject.generateProjectile(@position_x, @position_y, face_direction, @name)    
+    when $directions["left"]
+      mapObject.generateProjectile(@position_x, @position_y, face_direction, @name)
+    when $directions["right"]
+      mapObject.generateProjectile(@position_x, @position_y, face_direction, @name) 
+    else     
+    end
+
+  end
+end
+
+
+class Enemy < Unit
 
 end
+
+
 #------Program Main----------------
 #Initialize unit and World
 World = Map.new(15,15)
-Tom = Unit.new
+Tom = Enemy.new
 World.showTrappedBlocks()
 World.markEnemyLocation()
 World.generateProjectile(3,0,"left", "none")
@@ -353,11 +439,25 @@ while user_input != "q" do
 	World.printCurrentMap()
 
 
-	puts "w = up ; s = down ; a = left ; d = right ; r = remove all projectiles ; q = quit" ;
+	puts "c = change face direction ; w = up ; s = down ; a = left ; d = right ; e = fire ; r = remove all projectiles ; q = quit" ;
 	puts "your next move?"
 	user_input = gets.chomp.to_s.downcase
 
 	case 
+    when user_input.match(/c/)
+      puts "Face Direction select: w = up ; s = down ; a = left ; d = right"
+      user_input = gets.chomp.to_s.downcase
+
+      case
+      when user_input.match(/w/)
+        Tom.changeFaceDirection("up")
+      when user_input.match(/s/)
+        Tom.changeFaceDirection("down")
+      when user_input.match(/a/)
+        Tom.changeFaceDirection("left")
+      when user_input.match(/d/)
+        Tom.changeFaceDirection("right")
+      end
 		when user_input.match(/w/)
 			Tom.moveUnitUp(World)
 		when user_input.match(/s/)
@@ -366,6 +466,8 @@ while user_input != "q" do
 			Tom.moveUnitLeft(World)
 		when user_input.match(/d/)
 			Tom.moveUnitRight(World)
+    when user_input.match(/e/)
+      Tom.fireProjectile(World)
 		when user_input.match(/r/)
 			World.deleteAllProjectiles()
 		when user_input.match(/q/)
@@ -373,8 +475,6 @@ while user_input != "q" do
 			puts "Unknown command.  Try again."
 		
 	end
-
-
 end
 
 
