@@ -1,10 +1,13 @@
-#level_board Class.
+#Map Class.
 #This class creates the level's board and the object keeps track
 #of each cell's properties.  
 
 #require the matrix class by including the matrix file
 require 'matrix'
 
+#Require other classes
+require_relative 'projectile'
+require_relative 'unit'
 
 #overhaul all marking to be done by the 'markPositionOnMap'
 #overhaul enemy and traps into own class
@@ -240,242 +243,11 @@ end
 
 
 
-class Projectile
-  attr_accessor :position_x, :position_y, :face, :owner
-
-
-
-  def initialize(p_position_x = 0, p_position_y = 0, face = "up", owner = "none")
-    @position_x = p_position_x
-    @position_y = p_position_y
-    @face = nil
-    self.changeFaceDirection(face)
-    @owner = owner
-  end
-
-  def moveProjectile(position_x, position_y)
-    self.position_x = position_x
-    self.position_y = position_y
-  end
-
-  def changeFaceDirection(faceDirection)
-    case
-    when faceDirection.match(/up/)
-      @face = $directions["up"]
-    when faceDirection.match(/down/)
-      @face = $directions["down"]
-    when faceDirection.match(/left/)
-      @face = $directions["left"]
-    when faceDirection.match(/right/)
-      @face = $directions["right"]     
-    else
-      @face = nil
-    end    
-  end
-end
 
 
 
 
-class Unit
-  attr_accessor :position_x, :position_y, :face
-  def initialize(position_x = 0, position_y = 0, faceDirection = $directions["up"])
-    @position_x = position_x
-    @position_y = position_y
-    @face = nil
-    self.changeFaceDirection(faceDirection)
-    @name = nil
-  end
 
-
-  def moveUnitToLocation(position_x , position_y)
-    @position_x = position_x
-    @position_y = position_y
-  end
-
-  def markUnitLocation(mapObject,value)
-    mapObject.markPositionOnMap(@position_x,@position_y,value)
-
-  end
-
-  def removeUnitLocation(mapObject)
-    mapObject.markPositionOnMap(@position_x,@position_y,"x")
-  end
-
-  def moveUnitUp(mapObject)
-
-    #add in test to see if valid spot on grid
-    if 0 <= @position_y-1 && @position_y-1 < mapObject.map_height
-      self.removeUnitLocation(mapObject)
-      @position_y = @position_y - 1
-      self.markUnitLocation(mapObject, "H")
-    else
-      puts "INVALID MOVE"
-    end
-  end
-
-  def moveUnitDown(mapObject)
-    if 0 <= @position_y+1 && @position_y+1 < mapObject.map_height
-      self.removeUnitLocation(mapObject)
-      @position_y = @position_y + 1
-      self.markUnitLocation(mapObject, "H")
-    else
-      puts "INVALID MOVE"
-    end
-  end 
-
-  def moveUnitLeft(mapObject)
-    if 0 <= @position_x-1 && @position_x-1 < mapObject.map_width
-      self.removeUnitLocation(mapObject)
-      @position_x = @position_x - 1
-      self.markUnitLocation(mapObject, "H")
-    else
-      puts "INVALID MOVE"
-    end
-  end 
-
-  def moveUnitRight(mapObject)
-    if 0 <= @position_x+1 && @position_x+1 < mapObject.map_width
-      self.removeUnitLocation(mapObject)
-      @position_x = @position_x + 1
-      self.markUnitLocation(mapObject, "H")
-    else
-      puts "INVALID MOVE"
-    end
-  end
-
-  def changeFaceDirection(faceDirectionString)
-    case
-    when faceDirectionString.match(/up/)
-      @face = $directions["up"]
-    when faceDirectionString.match(/down/)
-      @face = $directions["down"]
-    when faceDirectionString.match(/left/)
-      @face = $directions["left"]
-    when faceDirectionString.match(/right/)
-      @face = $directions["right"]     
-    else
-      @face = nil
-    end    
-  end
-
-  #places projectile 1 block in front of unit that fires it.  Front determined
-  #by face direction of unit.
-  def fireProjectile(mapObject)
-    face_direction = @face
-
-    case face_direction
-    when $directions["up"]
-      mapObject.generateProjectile(@position_x, @position_y, face_direction, @name)
-    when $directions["down"]
-      mapObject.generateProjectile(@position_x, @position_y, face_direction, @name)    
-    when $directions["left"]
-      mapObject.generateProjectile(@position_x, @position_y, face_direction, @name)
-    when $directions["right"]
-      mapObject.generateProjectile(@position_x, @position_y, face_direction, @name) 
-    else     
-    end
-
-  end
-end
-
-
-class Enemy < Unit
-
-end
-
-
-#------Program Main----------------
-#Initialize unit and World
-World = Map.new(15,15)
-Tom = Enemy.new
-World.showTrappedBlocks()
-World.markEnemyLocation()
-World.generateProjectile(3,0,"left", "none")
-World.generateProjectile(4,1,"left", "none")
-World.generateProjectile(5,2,"left", "none")
-World.generateProjectile(6,3,"left", "none")
-World.generateProjectile(7,4,"left", "none")
-World.generateProjectile(4,14,"up", "none")
-World.generateProjectile(5,14,"up", "none")
-World.generateProjectile(6,14,"up", "none")
-World.generateProjectile(7,14,"up", "none")
-World.generateProjectile(10,5,"right","none")
-World.generateProjectile(11,5,"right","none")
-World.generateProjectile(10,7,"down","none")
-World.generateProjectile(11,7,"down","none")
-
-
-World.printCurrentMap()
-
-#Program loop here
-user_input = nil
-
-while user_input != "q" do
-  #moves all projectiles
-  World.moveAllProjectiles()
-
-  #shows all traps.  Reshows if was covered by another entity
-  World.showTrappedBlocks()
-
-  #shows all projectiles
-  World.showAllProjectiles()
-
-  #marks enemy location if enemy present
-  if World.enemy != nil
-    World.markEnemyLocation()
-  end
-
-  #places unit
-  Tom.markUnitLocation(World,"H")
-
-
-  #checks for unit trapped
-  if World.checkForEncounter(Tom) === true
-    break
-  end
-
-  #Shows unit locations
-  World.printCurrentMap()
-
-
-  puts "c = change face direction ; w = up ; s = down ; a = left ; d = right ; e = fire ; r = remove all projectiles ; q = quit" ;
-  puts "your next move?"
-  user_input = gets.chomp.to_s.downcase
-
-  case 
-    when user_input.match(/c/)
-      puts "Face Direction select: w = up ; s = down ; a = left ; d = right"
-      user_input = gets.chomp.to_s.downcase
-
-      case
-      when user_input.match(/w/)
-        Tom.changeFaceDirection("up")
-      when user_input.match(/s/)
-        Tom.changeFaceDirection("down")
-      when user_input.match(/a/)
-        Tom.changeFaceDirection("left")
-      when user_input.match(/d/)
-        Tom.changeFaceDirection("right")
-      end
-    when user_input.match(/w/)
-      Tom.moveUnitUp(World)
-    when user_input.match(/s/)
-      Tom.moveUnitDown(World)
-    when user_input.match(/a/)
-      Tom.moveUnitLeft(World)
-    when user_input.match(/d/)
-      Tom.moveUnitRight(World)
-    when user_input.match(/e/)
-      Tom.fireProjectile(World)
-    when user_input.match(/r/)
-      World.deleteAllProjectiles()
-    when user_input.match(/q/)
-    else
-      puts "Unknown command.  Try again."
-    
-  end
-end
 
 
 
