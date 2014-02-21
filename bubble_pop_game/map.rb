@@ -45,8 +45,8 @@ class Map
 
   def checkForEncounter(unit_object)
     traps_list.each do |trap|
-      if unit_object.position_x === trap.position_x && unit_object.position_y === trap.position_y
-        puts "trap on #{trap_x} x and #{trap_y} y" 
+      if locationOfTwoMatches(unit_object , trap)
+        puts "trap on #{trap.position_x} x and #{trap_position_y} y" 
         puts "You are trapped"
         puts "you lose"
         return true
@@ -54,7 +54,7 @@ class Map
     end
 
     goal.each do |goal|
-      if unit_object.position_x === goal.position_x && unit_object.position_y === goal.position_y
+      if locationOfTwoMatches(unit_object , goal)
         puts "goal on #{goal.position_x} x and #{goal.position_y} y" 
         puts "You have found the goal"
         puts "You win!"
@@ -63,7 +63,7 @@ class Map
     end
 
     projectiles_list.each do |projectile|
-      if unit_object.position_x === projectile.position_x && unit_object.position_y === projectile.position_y
+      if locationOfTwoMatches(unit_object , projectile)
         puts "you have been hit"
         puts "you lost"
         return true
@@ -73,7 +73,7 @@ class Map
     if enemy_list != nil
       #overhaul enemy into own class.  Make similar to projectiles_list for enemy_list data member
       enemy_list.each do |enemy|
-        if unit_object.position_x === enemy.position_x && unit_object.position_y === enemy.position_y
+        if locationOfTwoMatches(unit_object , enemy)
           puts "battle time"
           puts "pick 0 or 1"
           user_choice = gets.chomp.to_s
@@ -94,7 +94,7 @@ class Map
             #enemy spawns projectiles on map 1-4 projectiles
             random_number = rand(4)+1
             random_number.times do
-              self.generateProjectile(rand(15), rand(15), "up", "enemy")
+              self.generateProjectile(rand(map_width), rand(map_width), "up", "enemy")
             end
             showAllProjectiles()
             printCurrentMap()
@@ -103,7 +103,7 @@ class Map
         #projectile will destroy enemy unit.  Projectile will disappear after.
         #move this to a reject! iterator in future patch.
         projectiles_list.each do |projectile|
-          if projectile.position_x === enemy.position_x && projectile.position_y === enemy.position_y
+          if locationOfTwoMatches(projectile , enemy)
             markPositionOnMap(enemy.position_x, enemy.position_y, "x")
             enemy_list.delete(enemy)
             projectiles_list.delete(projectile)
@@ -114,7 +114,6 @@ class Map
     end
   end
 
-  #overhaul traps into own class.  Make similar to projectiles_list for @enemy data member
   def showTrappedBlocks()
     self.traps_list.each do|trap|
       self.markPositionOnMap(trap.position_x, trap.position_y, "O")
@@ -233,8 +232,8 @@ class Map
     self.projectiles_list.reject!{ |projectile|
       projectile_position_x = projectile.position_x
       projectile_position_y = projectile.position_y
-      puts "**#{projectile_position_x},,#{projectile_position_y}"
-      if projectile.position_y > 2 || projectile.position_x > 2
+      puts "**#{projectile_position_x},#{projectile_position_y}"
+      if projectile.position_y >= 0 || projectile.position_x >= 0
         self.markPositionOnMap(projectile_position_x,projectile_position_y,"x")
       end
     }
@@ -244,6 +243,15 @@ class Map
   #generate trap at location
   def generateTrapOnMap(position_x, position_y)
     traps_list.push(Trap.new(position_x,position_y))
+  end
+
+  #Checks if location of 2 things have matching x and y
+  def locationOfTwoMatches(unit_a , unit_b)
+    if unit_a.position_x === unit_b.position_x && unit_a.position_y === unit_b.position_y
+      return true
+    else
+      return false
+    end
   end
 end
 
