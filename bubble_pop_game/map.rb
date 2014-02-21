@@ -97,7 +97,8 @@ class Map
               self.generateProjectile(rand(map_width), rand(map_width), "up", "enemy")
             end
             showAllProjectiles()
-            printCurrentMap()
+            puts ""
+
           end
         end
         #projectile will destroy enemy unit.  Projectile will disappear after.
