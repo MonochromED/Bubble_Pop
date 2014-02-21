@@ -1,12 +1,12 @@
 #Unit Class
 class Unit
-  attr_accessor :position_x, :position_y, :face
-  def initialize(position_x = 0, position_y = 0, faceDirection = $directions["up"])
+  attr_accessor :position_x, :position_y, :face, :name
+  def initialize(position_x = 0, position_y = 0, faceDirection = $directions["up"], name = nil)
     @position_x = position_x
     @position_y = position_y
     @face = nil
     self.changeFaceDirection(faceDirection)
-    @name = nil
+    @name = name
   end
 
 

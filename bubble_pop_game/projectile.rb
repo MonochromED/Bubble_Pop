@@ -18,15 +18,15 @@ class Projectile
     self.position_y = position_y
   end
 
-  def changeFaceDirection(faceDirection)
+  def changeFaceDirection(face_direction)
     case
-    when faceDirection.match(/up/)
+    when face_direction.match(/up/)
       @face = $directions["up"]
-    when faceDirection.match(/down/)
+    when face_direction.match(/down/)
       @face = $directions["down"]
-    when faceDirection.match(/left/)
+    when face_direction.match(/left/)
       @face = $directions["left"]
-    when faceDirection.match(/right/)
+    when face_direction.match(/right/)
       @face = $directions["right"]     
     else
       @face = nil

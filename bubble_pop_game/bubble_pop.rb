@@ -7,61 +7,65 @@ require_relative 'projectile'
 
 
 #------Program Main----------------
-#Initialize unit and World
-World = Map.new(15,15)
-Tom = Enemy.new
-World.showTrappedBlocks()
-World.markEnemyLocation()
-World.generateProjectile(3,0,"left", "none")
-World.generateProjectile(4,1,"left", "none")
-World.generateProjectile(5,2,"left", "none")
-World.generateProjectile(6,3,"left", "none")
-World.generateProjectile(7,4,"left", "none")
-World.generateProjectile(4,14,"up", "none")
-World.generateProjectile(5,14,"up", "none")
-World.generateProjectile(6,14,"up", "none")
-World.generateProjectile(7,14,"up", "none")
-World.generateProjectile(10,5,"right","none")
-World.generateProjectile(11,5,"right","none")
-World.generateProjectile(10,7,"down","none")
-World.generateProjectile(11,7,"down","none")
-
-
+#Initialize unit and world
 puts "Enter player name?"
 user_input = gets.chomp.to_s.downcase
+hero = Unit.new(0,0,"south",user_input)
+
+world = Map.new(15,15)
+world.showTrappedBlocks()
+world.markEnemyLocation()
+world.generateTrapOnMap(2,2)
+world.generateTrapOnMap(5,5)
+world.generateTrapOnMap(7,7)
+world.generateProjectile(3,0,"left", "none")
+world.generateProjectile(4,1,"left", "none")
+world.generateProjectile(5,2,"left", "none")
+world.generateProjectile(6,3,"left", "none")
+world.generateProjectile(7,4,"left", "none")
+world.generateProjectile(4,14,"up", "none")
+world.generateProjectile(5,14,"up", "none")
+world.generateProjectile(6,14,"up", "none")
+world.generateProjectile(7,14,"up", "none")
+world.generateProjectile(10,5,"right","none")
+world.generateProjectile(11,5,"right","none")
+world.generateProjectile(10,7,"down","none")
+world.generateProjectile(11,7,"down","none")
 
 
-World.printCurrentMap()
+world.printCurrentMap()
+
+puts "Hero #{hero.name} has joined the battle!"
 
 #Program loop here
 user_input = nil
 
 while user_input != "q" do
   #moves all projectiles
-  World.moveAllProjectiles()
+  world.moveAllProjectiles()
 
   #shows all traps.  Reshows if was covered by another entity
-  World.showTrappedBlocks()
+  world.showTrappedBlocks()
 
   #shows all projectiles
-  World.showAllProjectiles()
+  world.showAllProjectiles()
 
   #marks enemy location if enemy present
-  if World.enemy != nil
-    World.markEnemyLocation()
+  if world.enemy_list != nil
+    world.markEnemyLocation()
   end
 
   #places unit
-  Tom.markUnitLocation(World,"H")
+  hero.markUnitLocation(world,"H")
 
 
   #checks for unit trapped
-  if World.checkForEncounter(Tom) === true
+  if world.checkForEncounter(hero) === true
     break
   end
 
   #Shows unit locations
-  World.printCurrentMap()
+  world.printCurrentMap()
 
 
 
@@ -78,26 +82,26 @@ while user_input != "q" do
 
       case
       when user_input.match(/w/)
-        Tom.changeFaceDirection("up")
+        hero.changeFaceDirection("up")
       when user_input.match(/s/)
-        Tom.changeFaceDirection("down")
+        hero.changeFaceDirection("down")
       when user_input.match(/a/)
-        Tom.changeFaceDirection("left")
+        hero.changeFaceDirection("left")
       when user_input.match(/d/)
-        Tom.changeFaceDirection("right")
+        hero.changeFaceDirection("right")
       end
     when user_input.match(/w/)
-      Tom.moveUnitUp(World)
+      hero.moveUnitUp(world)
     when user_input.match(/s/)
-      Tom.moveUnitDown(World)
+      hero.moveUnitDown(world)
     when user_input.match(/a/)
-      Tom.moveUnitLeft(World)
+      hero.moveUnitLeft(world)
     when user_input.match(/d/)
-      Tom.moveUnitRight(World)
+      hero.moveUnitRight(world)
     when user_input.match(/e/)
-      Tom.fireProjectile(World)
+      hero.fireProjectile(world)
     when user_input.match(/r/)
-      World.deleteAllProjectiles()
+      world.deleteAllProjectiles()
     when user_input.match(/q/)
     else
       puts "Unknown command.  Try again."
