@@ -13,11 +13,10 @@ user_input = gets.chomp.to_s.downcase
 hero = Unit.new(0,0,"south",user_input)
 
 world = Map.new(15,15)
+world.spawnTrapsOnMap(3)
+world.spawnEnemiesOnMap(2)
 world.showTrappedBlocks()
 world.markEnemyLocation()
-world.generateTrapOnMap(2,2)
-world.generateTrapOnMap(5,5)
-world.generateTrapOnMap(7,7)
 world.generateProjectile(3,0,"left", "none")
 world.generateProjectile(4,1,"left", "none")
 world.generateProjectile(5,2,"left", "none")

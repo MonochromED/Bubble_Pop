@@ -35,7 +35,7 @@ class Map
     @map_height = height
     @traps_list = []
     @goal =[Goal.new(map_width-1, map_height-1)]
-    @enemy_list = [Enemy.new(rand(map_width),rand(map_height)), Enemy.new(rand(map_width),rand(map_height)) ]
+    @enemy_list = []
     @projectiles_list = Array.new #create projectile class to insert objects into this array
   end
 
@@ -46,7 +46,7 @@ class Map
   def checkForEncounter(unit_object)
     traps_list.each do |trap|
       if locationOfTwoMatches(unit_object , trap)
-        puts "trap on #{trap.position_x} x and #{trap_position_y} y" 
+        puts "trap on #{trap.position_x} x and #{trap.position_y} y" 
         puts "You are trapped"
         puts "you lose"
         return true
@@ -241,7 +241,7 @@ class Map
   end
 
   #generate trap at location
-  def generateTrapOnMap(position_x, position_y)
+  def generateTrapOnMap(position_x = rand(map_width), position_y = rand(map_height))
     traps_list.push(Trap.new(position_x,position_y))
   end
 
@@ -253,6 +253,26 @@ class Map
       return false
     end
   end
+
+  #generate enemy on map
+  def generateEnemyOnMap(position_x = rand(map_width), position_y = rand(map_height))
+    enemy_list.push(Enemy.new(position_x, position_y))
+  end
+
+  #spawn specified number of enemies at random map locations
+  def spawnEnemiesOnMap(quantity = 1)
+    quantity.times do
+      generateEnemyOnMap()
+    end
+  end
+
+  #spawn specified number of traps at random locations
+  def spawnTrapsOnMap(quantity = 1)
+    quantity.times do
+      generateTrapOnMap()
+    end
+  end
+
 end
 
 
